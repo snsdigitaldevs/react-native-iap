@@ -22,6 +22,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
@@ -532,6 +534,17 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
     }
 
     if (purchases != null) {
+      Set<Purchase> purchasesSet = new TreeSet<>(new Comparator<Purchase>() {
+        @Override
+        public int compare(Purchase o1, Purchase o2) {
+          return o1.getSku().compareTo(o2.getSku());
+        }
+      });
+      Purchase.PurchasesResult result1 = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
+      Purchase.PurchasesResult result2 = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
+      purchasesSet.addAll(purchases);
+      purchasesSet.addAll(result1.getPurchasesList());
+      purchasesSet.addAll(result2.getPurchasesList());
       WritableMap promiseItem = null;
       for (Purchase purchase : purchases) {
         WritableMap item = Arguments.createMap();
