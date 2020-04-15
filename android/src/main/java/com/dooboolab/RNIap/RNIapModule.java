@@ -20,9 +20,11 @@ import com.facebook.react.bridge.ObjectAlreadyConsumedException;
 
 import java.math.BigDecimal;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -137,8 +139,8 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
   @ReactMethod
   public void initConnection(final Promise promise) {
     billingClient = BillingClient.newBuilder(reactContext)
-        .enablePendingPurchases()
-        .setListener(this).build();
+                                 .enablePendingPurchases()
+                                 .setListener(this).build();
     billingClient.startConnection(new BillingClientStateListener() {
       @Override
       public void onBillingSetupFinished(BillingResult billingResult) {
@@ -202,11 +204,11 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
 
         for (Purchase purchase : purchases) {
           final ConsumeParams consumeParams = ConsumeParams.newBuilder()
-              .setPurchaseToken(purchase.getPurchaseToken())
-              .setDeveloperPayload(purchase.getDeveloperPayload())
-              .build();
+                                                           .setPurchaseToken(purchase.getPurchaseToken())
+                                                           .setDeveloperPayload(purchase.getDeveloperPayload())
+                                                           .build();
 
-         final ConsumeResponseListener listener = new ConsumeResponseListener() {
+          final ConsumeResponseListener listener = new ConsumeResponseListener() {
             @Override
             public void onConsumeResponse(BillingResult billingResult, String outToken) {
               if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
@@ -377,13 +379,13 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
 
   @ReactMethod
   public void buyItemByType(
-    final String type,
-    final String sku,
-    final String oldSku,
-    final Integer prorationMode,
-    final String developerId,
-    final String accountId,
-    final Promise promise
+          final String type,
+          final String sku,
+          final String oldSku,
+          final Integer prorationMode,
+          final String developerId,
+          final String accountId,
+          final Promise promise
   ) {
     final Activity activity = getCurrentActivity();
 
@@ -467,10 +469,10 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
       public void run() {
         AcknowledgePurchaseParams acknowledgePurchaseParams =
                 AcknowledgePurchaseParams.newBuilder()
-                        .setPurchaseToken(token)
-                        .setDeveloperPayload(developerPayLoad)
-                        .build();
-                        
+                                         .setPurchaseToken(token)
+                                         .setDeveloperPayload(developerPayLoad)
+                                         .build();
+
         billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
           @Override
           public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
@@ -497,9 +499,9 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
   @ReactMethod
   public void consumeProduct(final String token, final String developerPayLoad, final Promise promise) {
     final ConsumeParams params = ConsumeParams.newBuilder()
-        .setPurchaseToken(token)
-        .setDeveloperPayload(developerPayLoad)
-        .build();
+                                              .setPurchaseToken(token)
+                                              .setDeveloperPayload(developerPayLoad)
+                                              .build();
     billingClient.consumeAsync(params, new ConsumeResponseListener() {
       @Override
       public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
@@ -536,19 +538,19 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
     }
 
     if (purchases != null) {
-      Set<Purchase> purchasesSet = new TreeSet<>(new Comparator<Purchase>() {
-        @Override
-        public int compare(Purchase o1, Purchase o2) {
-          return o1.getSku().compareTo(o2.getSku());
-        }
-      });
-      Purchase.PurchasesResult result1 = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
-      Purchase.PurchasesResult result2 = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
-      purchasesSet.addAll(purchases);
-      purchasesSet.addAll(result1.getPurchasesList());
-      purchasesSet.addAll(result2.getPurchasesList());
+      Log.d("====", purchases.toString());
+      Set<Purchase> purchasesSet = new HashSet<>();
+      if (purchases.isEmpty()) {
+        Purchase.PurchasesResult result1 = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
+        Purchase.PurchasesResult result2 = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
+        purchasesSet.addAll(result1.getPurchasesList());
+        purchasesSet.addAll(result2.getPurchasesList());
+      } else {
+        purchasesSet.addAll(purchases);
+      }
+      Log.d("result2====", purchasesSet.toString());
       WritableMap promiseItem = null;
-      for (Purchase purchase : purchases) {
+      for (Purchase purchase : purchasesSet) {
         WritableMap item = Arguments.createMap();
         item.putString("productId", purchase.getSku());
         item.putString("transactionId", purchase.getOrderId());
@@ -615,7 +617,7 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
                          String eventName,
                          @Nullable WritableMap params) {
     reactContext
-        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(eventName, params);
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(eventName, params);
   }
 }
