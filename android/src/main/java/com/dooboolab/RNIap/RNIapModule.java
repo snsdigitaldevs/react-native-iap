@@ -538,19 +538,12 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
     }
 
     if (purchases != null) {
-      Log.d("====", purchases.toString());
-      Set<Purchase> purchasesSet = new HashSet<>();
       if (purchases.isEmpty()) {
-        Purchase.PurchasesResult result1 = billingClient.queryPurchases(BillingClient.SkuType.SUBS);
-        Purchase.PurchasesResult result2 = billingClient.queryPurchases(BillingClient.SkuType.INAPP);
-        purchasesSet.addAll(result1.getPurchasesList());
-        purchasesSet.addAll(result2.getPurchasesList());
-      } else {
-        purchasesSet.addAll(purchases);
+        purchases.addAll(billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList());
       }
-      Log.d("result2====", purchasesSet.toString());
+      Log.d("====", purchases.toString());
       WritableMap promiseItem = null;
-      for (Purchase purchase : purchasesSet) {
+      for (Purchase purchase : purchases) {
         WritableMap item = Arguments.createMap();
         item.putString("productId", purchase.getSku());
         item.putString("transactionId", purchase.getOrderId());
