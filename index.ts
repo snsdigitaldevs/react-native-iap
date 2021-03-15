@@ -281,7 +281,6 @@ InAppPurchase | SubscriptionPurchase
  * Request a purchase for product. This will be received in `PurchaseUpdatedListener`.
  * @param {string} sku The product's sku/ID
  * @param {boolean} [andDangerouslyFinishTransactionAutomaticallyIOS] You should set this to false and call finishTransaction manually when you have delivered the purchased goods to the user. It defaults to true to provide backwards compatibility. Will default to false in version 4.0.0.
- * @param {string} [userIdAndroid] Specify an optional obfuscated string that is uniquely associated with the user's account in.
  * @returns {Promise<InAppPurchase>}
  */
 export const requestPurchase = (
@@ -302,7 +301,7 @@ export const requestPurchase = (
       checkNativeiOSAvailable();
       return RNIapIos.buyProduct(
         sku,
-        andDangerouslyFinishTransactionAutomaticallyIOS,
+        andDangerouslyFinishTransactionAutomaticallyIOS
       );
     },
     android: async () => {
@@ -311,7 +310,7 @@ export const requestPurchase = (
         ANDROID_ITEM_TYPE_IAP,
         sku,
         null,
-        0,
+        0
       );
     },
   })();
@@ -344,7 +343,7 @@ export const requestSubscription = (
       checkNativeiOSAvailable();
       return RNIapIos.buyProduct(
         sku,
-        andDangerouslyFinishTransactionAutomaticallyIOS,
+        andDangerouslyFinishTransactionAutomaticallyIOS
       );
     },
     android: async () => {
@@ -354,7 +353,7 @@ export const requestSubscription = (
         ANDROID_ITEM_TYPE_SUBSCRIPTION,
         sku,
         oldSkuAndroid,
-        prorationModeAndroid,
+        prorationModeAndroid
       );
     },
   })();
