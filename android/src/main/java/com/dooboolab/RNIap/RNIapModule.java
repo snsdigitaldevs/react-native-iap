@@ -380,6 +380,7 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
   public void buyItemByType(
           final String type,
           final String sku,
+          final String oldSku,
           final Integer prorationMode,
           final Promise promise
   ) {
