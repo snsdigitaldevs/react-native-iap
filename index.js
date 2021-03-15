@@ -255,11 +255,9 @@ export var getAvailablePurchases = function () {
  * Request a purchase for product. This will be received in `PurchaseUpdatedListener`.
  * @param {string} sku The product's sku/ID
  * @param {boolean} [andDangerouslyFinishTransactionAutomaticallyIOS] You should set this to false and call finishTransaction manually when you have delivered the purchased goods to the user. It defaults to true to provide backwards compatibility. Will default to false in version 4.0.0.
- * @param {string} [developerIdAndroid] Specify an optional obfuscated string of developer profile name.
- * @param {string} [userIdAndroid] Specify an optional obfuscated string that is uniquely associated with the user's account in.
  * @returns {Promise<InAppPurchase>}
  */
-export var requestPurchase = function (sku, andDangerouslyFinishTransactionAutomaticallyIOS, developerIdAndroid, accountIdAndroid) {
+export var requestPurchase = function (sku, andDangerouslyFinishTransactionAutomaticallyIOS) {
     return Platform.select({
         ios: function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -277,7 +275,7 @@ export var requestPurchase = function (sku, andDangerouslyFinishTransactionAutom
         android: function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 checkNativeAndroidAvailable();
-                return [2 /*return*/, RNIapModule.buyItemByType(ANDROID_ITEM_TYPE_IAP, sku, null, 0, developerIdAndroid, accountIdAndroid)];
+                return [2 /*return*/, RNIapModule.buyItemByType(ANDROID_ITEM_TYPE_IAP, sku, null, 0)];
             });
         }); },
     })();
@@ -288,11 +286,9 @@ export var requestPurchase = function (sku, andDangerouslyFinishTransactionAutom
  * @param {boolean} [andDangerouslyFinishTransactionAutomaticallyIOS] You should set this to false and call finishTransaction manually when you have delivered the purchased goods to the user. It defaults to true to provide backwards compatibility. Will default to false in version 4.0.0.
  * @param {string} [oldSkuAndroid] SKU that the user is upgrading or downgrading from.
  * @param {ProrationModesAndroid} [prorationModeAndroid] UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY, IMMEDIATE_WITH_TIME_PRORATION, IMMEDIATE_AND_CHARGE_PRORATED_PRICE, IMMEDIATE_WITHOUT_PRORATION, DEFERRED
- * @param {string} [developerIdAndroid] Specify an optional obfuscated string of developer profile name.
- * @param {string} [userIdAndroid] Specify an optional obfuscated string that is uniquely associated with the user's account in.
  * @returns {Promise<void>}
  */
-export var requestSubscription = function (sku, andDangerouslyFinishTransactionAutomaticallyIOS, oldSkuAndroid, prorationModeAndroid, developerIdAndroid, userIdAndroid) {
+export var requestSubscription = function (sku, andDangerouslyFinishTransactionAutomaticallyIOS, oldSkuAndroid, prorationModeAndroid) {
     return Platform.select({
         ios: function () { return __awaiter(void 0, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -312,7 +308,7 @@ export var requestSubscription = function (sku, andDangerouslyFinishTransactionA
                 checkNativeAndroidAvailable();
                 if (!prorationModeAndroid)
                     prorationModeAndroid = -1;
-                return [2 /*return*/, RNIapModule.buyItemByType(ANDROID_ITEM_TYPE_SUBSCRIPTION, sku, oldSkuAndroid, prorationModeAndroid, developerIdAndroid, userIdAndroid)];
+                return [2 /*return*/, RNIapModule.buyItemByType(ANDROID_ITEM_TYPE_SUBSCRIPTION, sku, oldSkuAndroid, prorationModeAndroid)];
             });
         }); },
     })();

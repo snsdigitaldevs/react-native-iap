@@ -205,7 +205,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
         for (Purchase purchase : purchases) {
           final ConsumeParams consumeParams = ConsumeParams.newBuilder()
                                                            .setPurchaseToken(purchase.getPurchaseToken())
-                                                           .setDeveloperPayload(purchase.getDeveloperPayload())
                                                            .build();
 
           final ConsumeResponseListener listener = new ConsumeResponseListener() {
@@ -277,7 +276,7 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
               item.putString("introductoryPrice", skuDetails.getIntroductoryPrice());
               item.putString("subscriptionPeriodAndroid", skuDetails.getSubscriptionPeriod());
               item.putString("freeTrialPeriodAndroid", skuDetails.getFreeTrialPeriod());
-              item.putString("introductoryPriceCyclesAndroid", skuDetails.getIntroductoryPriceCycles());
+              item.putString("introductoryPriceCyclesAndroid", String.valueOf(skuDetails.getIntroductoryPriceCycles()));
               item.putString("introductoryPricePeriodAndroid", skuDetails.getIntroductoryPricePeriod());
               // new
               item.putString("iconUrl", skuDetails.getIconUrl());
@@ -383,8 +382,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
           final String sku,
           final String oldSku,
           final Integer prorationMode,
-          final String developerId,
-          final String accountId,
           final Promise promise
   ) {
     final Activity activity = getCurrentActivity();
@@ -420,10 +417,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
         }
         builder.setSkuDetails(selectedSku);
 
-        if (oldSku != null) {
-          builder.setOldSku(oldSku);
-        }
-
         if (prorationMode != null && prorationMode != -1) {
           if (prorationMode == BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE) {
             builder.setReplaceSkusProrationMode(BillingFlowParams.ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE);
@@ -448,13 +441,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
           }
         }
 
-        if (accountId != null) {
-          builder.setAccountId(accountId);
-        }
-        if (developerId != null) {
-          builder.setDeveloperId(developerId);
-        }
-
         BillingFlowParams flowParams = builder.build();
         BillingResult billingResult = billingClient.launchBillingFlow(activity, flowParams);
         String[] errorData = DoobooUtils.getInstance().getBillingResponseData(billingResult.getResponseCode());
@@ -470,7 +456,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
         AcknowledgePurchaseParams acknowledgePurchaseParams =
                 AcknowledgePurchaseParams.newBuilder()
                                          .setPurchaseToken(token)
-                                         .setDeveloperPayload(developerPayLoad)
                                          .build();
 
         billingClient.acknowledgePurchase(acknowledgePurchaseParams, new AcknowledgePurchaseResponseListener() {
@@ -500,7 +485,6 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
   public void consumeProduct(final String token, final String developerPayLoad, final Promise promise) {
     final ConsumeParams params = ConsumeParams.newBuilder()
                                               .setPurchaseToken(token)
-                                              .setDeveloperPayload(developerPayLoad)
                                               .build();
     billingClient.consumeAsync(params, new ConsumeResponseListener() {
       @Override
@@ -581,22 +565,26 @@ public class RNIapModule extends ReactContextBaseJavaModule implements Purchases
       public void run() {
         String[] types = { BillingClient.SkuType.INAPP, BillingClient.SkuType.SUBS };
 
-        for (String type : types) {
-          Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(type);
-          ArrayList<Purchase> unacknowledgedPurchases = new ArrayList<>();
+        try {
+          for (String type : types) {
+            Purchase.PurchasesResult purchasesResult = billingClient.queryPurchases(type);
+            ArrayList<Purchase> unacknowledgedPurchases = new ArrayList<>();
 
-          if (purchasesResult == null || purchasesResult.getPurchasesList() == null || purchasesResult.getPurchasesList().size() == 0) {
-            continue;
-          }
-          for (Purchase purchase : purchasesResult.getPurchasesList()) {
-            if (!purchase.isAcknowledged()) {
-              unacknowledgedPurchases.add(purchase);
+            if (purchasesResult == null || purchasesResult.getPurchasesList() == null || purchasesResult.getPurchasesList().size() == 0) {
+              continue;
             }
+            for (Purchase purchase : purchasesResult.getPurchasesList()) {
+              if (!purchase.isAcknowledged()) {
+                unacknowledgedPurchases.add(purchase);
+              }
+            }
+            onPurchasesUpdated(purchasesResult.getBillingResult(), unacknowledgedPurchases);
           }
-          onPurchasesUpdated(purchasesResult.getBillingResult(), unacknowledgedPurchases);
-        }
+          promise.resolve(true);
 
-        promise.resolve(true);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
     });
   }
